@@ -53,9 +53,15 @@ void append(void *arg)
 
     int count = 0;
     entry *j = t_arg->lEntryPool_begin;
-    for (char *i = t_arg->data_begin; i < t_arg->data_end;
-            i += MAX_LAST_NAME_SIZE * t_arg->numOfThread,
-            j += t_arg->numOfThread, count++) {
+    char *i = t_arg->data_begin;
+    j->lastName = i;
+    j->pNext = NULL;
+    j->dtl = NULL;
+    j++;
+    for (i += MAX_LAST_NAME_SIZE ;
+            i < t_arg->data_end;
+            i += MAX_LAST_NAME_SIZE,
+            j ++ , count++) {
         /* Append the new at the end of the local linked list */
         t_arg->lEntry_tail->pNext = j;
         t_arg->lEntry_tail = t_arg->lEntry_tail->pNext;

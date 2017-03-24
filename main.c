@@ -89,10 +89,15 @@ int main(int argc, char *argv[])
 
     /* Prepare for multi-threading */
     pthread_setconcurrency(THREAD_NUM + 1);
-    for (int i = 0; i < THREAD_NUM; i++)
+    int num_of_entry_per_thread = file_size / MAX_LAST_NAME_SIZE /THREAD_NUM;
+    int space_of_entry_per_thread = num_of_entry_per_thread * MAX_LAST_NAME_SIZE;
+    for (int i = 0; i < THREAD_NUM; i++) {
         // Created by malloc, remeber to free them.
-        thread_args[i] = createThread_arg(map + MAX_LAST_NAME_SIZE * i, map + file_size, i,
-                                          THREAD_NUM, entry_pool + i);
+        thread_args[i] = createThread_arg(
+                             map + space_of_entry_per_thread * i,
+                             map + ((i == THREAD_NUM - 1) ? file_size : space_of_entry_per_thread * (i + 1)),
+                             i, THREAD_NUM, entry_pool + num_of_entry_per_thread * i);
+    }
     /* Deliver the jobs to all threads and wait for completing */
     clock_gettime(CLOCK_REALTIME, &mid);
     for (int i = 0; i < THREAD_NUM; i++)
@@ -104,11 +109,11 @@ int main(int argc, char *argv[])
     /* Connect the linked list of each thread */
     for (int i = 0; i < THREAD_NUM; i++) {
         if (i == 0) {
-            pHead = thread_args[i]->lEntry_head->pNext;
+            pHead = thread_args[i]->lEntry_head;
             DEBUG_LOG("Connect %d head string %s %p\n", i,
                       pHead->lastName, thread_args[i]->data_begin);
         } else {
-            e->pNext = thread_args[i]->lEntry_head->pNext;
+            e->pNext = thread_args[i]->lEntry_head;
             DEBUG_LOG("Connect %d head string %s %p\n", i,
                       e->pNext->lastName, thread_args[i]->data_begin);
         }
